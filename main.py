@@ -1,45 +1,71 @@
-# This function checks inputs to make sure they are valid percentages
-def checkPercent(percent):
-    # If the input string is not completely numeric, error prints
-    if not percent.isnumeric():
-        print('Please enter a number and omit "%" sign:')
-        return False
+def written_percent(percent):
+    valid_percent = ''
+    for char in percent:
+        if char != '%':
+            valid_percent += char
+    valid_percent = int(valid_percent)
+    return valid_percent
+
+
+def decimal_percent(percent):
+    print('Assuming percentage passed as decimal. Multiplying by 100 for value')
+    percent *= 100
+    return int(percent)
+
+
+def convert_percent(percent):
+    if '%' in percent:
+        percent = written_percent(percent)
     else:
-        percent = int(percent)
-        # If the input string is over 100 or less than zero, error prints
-        if percent >= 100 or percent <= 0:
-            print("Please enter a valid percentage:")
-            return False
+        percent = float(percent)
+        if percent < 1:
+            percent = decimal_percent(percent)
         else:
-            return True
+            percent = int(percent)
+    return percent
 
-# This is the goal commission that the user inputs
-print('Goal commission: ')
-commission = int(input())
 
-# The gross commission percentage is how much of the house sale goes to the firm
-print('Gross commission percentage: ')
-while True:
-    grossPercent = input()
-    if checkPercent(grossPercent):
-        break
+def checkPercent(message):
+    percent = input(message)
+    valid = True
+    try:
+        percent = int(percent)
+    except ValueError:
+        try:
+            percent = convert_percent(percent)
+        except ValueError:
+            print('Percentages must be a number.')
+            return False, 0
 
-# The commission split is the percentage of the gross commission that the firm pays out to the agent
-print('Commission split (for agent): ')
-while True:
-    agentSplit = input()
-    if checkPercent(agentSplit):
-        break
+    if percent > 100:
+        print('Percent cannot be over 100')
+        valid = False
 
-# Calculates the gross commission and the total dollar amount to be sold
-grossCommission = int(commission / (int(agentSplit) / 100))
-houseSales = int(grossCommission / (int(grossPercent) / 100))
+    return valid, percent
 
-# Formats both of these numbers to include commas every 3 digits, for ease of reading
-grossCommission = "{:,}".format(grossCommission)
-houseSales = "{:,}".format(houseSales)
 
-# Prints results
-print('Gross commission goal is: ' + grossCommission)
-print('Total sales goal is: ' + houseSales)
+def calcuation(commission, percentage):
+    return int(commission / (percentage / 100))
 
+
+commission = None
+while not isinstance(commission, int):
+    try:
+        commission = int(input('Goal comission:\n'))
+    except ValueError:
+        print('Goal comission must be a whole integer value')
+
+
+valid_gross_percent = False
+while not valid_gross_percent:
+    valid_gross_percent, grossPercent = checkPercent('Gross commission percentage:\n')
+
+valid_commmission = False
+while not valid_commmission:
+    valid_commmission, agentSplit = checkPercent('Commission split (for agent):\n')
+
+grossCommission = calcuation(commission, agentSplit)
+houseSales = calcuation(grossCommission, grossPercent)
+
+print(f'Gross commission goal is: {grossCommission:,}')
+print(f'Total sales goal is: {houseSales:,}')
